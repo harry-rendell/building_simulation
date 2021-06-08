@@ -38,7 +38,7 @@ class model_ND():
             
         # If only given parameters for a single segment (number), or for a single branch (vector), recast arrays
         if len(self.T.shape) < 2:
-            shape      = (1,) + (-1,) # Calculate the appropriate shape to cast to
+            shape      = (1,-1) # Calculate the appropriate shape to cast to
             self.k     = self.k.reshape(shape)
             self.c     = self.c.reshape(shape)
             self.T     = self.T.reshape(shape)
