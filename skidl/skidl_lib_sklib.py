@@ -1,0 +1,17 @@
+from skidl import Pin, Part, Alias, SchLib, SKIDL, TEMPLATE
+
+SKIDL_lib_version = '0.0.1'
+
+skidl_lib = SchLib(tool=SKIDL).add_parts(*[
+        Part(**{ 'name':'V', 'dest':TEMPLATE, 'tool':SKIDL, '_aliases':Alias({'vs', 'ammeter', 'VS', 'v', 'AMMETER'}), 'keywords':'voltage source', '_match_pin_regex':False, 'dc_value':UnitValue(1 V), 'description':'Voltage source', 'pyspice':{'name': 'V', 'kw': {'value': 'dc_value', 'dc_value': 'dc_value', 'p': 'plus', 'n': 'minus'}, 'add': <function add_part_to_circuit at 0x7ff675e4bef0>}, 'ref_prefix':'V', 'num_units':1, 'fplist':None, 'do_erc':True, 'aliases':Alias({'vs', 'ammeter', 'VS', 'v', 'AMMETER'}), 'pin':None, 'footprint':None, 'pins':[
+            Pin(num='1',name='p',func=Pin.types.PASSIVE,do_erc=True),
+            Pin(num='2',name='n',func=Pin.types.PASSIVE,do_erc=True)] }),
+        Part(**{ 'name':'R', 'dest':TEMPLATE, 'tool':SKIDL, 'pyspice':{'name': 'R', 'kw': {'value': 'resistance', 'resistance': 'resistance', 'ac': 'ac', 'multiplier': 'multiplier', 'm': 'multiplier', 'scale': 'scale', 'temp': 'temperature', 'temperature': 'temperature', 'dtemp': 'device_temperature', 'device_temperature': 'device_temperature', 'noisy': 'noisy', 'p': 'plus', 'n': 'minus'}, 'add': <function add_part_to_circuit at 0x7ff675e4bef0>}, 'keywords':'res resistor', 'description':'Resistor', '_match_pin_regex':False, 'ref_prefix':'R', 'num_units':1, 'fplist':None, 'do_erc':True, 'aliases':Alias(), 'pin':None, 'footprint':None, 'pins':[
+            Pin(num='1',name='p',func=Pin.types.PASSIVE,do_erc=True),
+            Pin(num='2',name='n',func=Pin.types.PASSIVE,do_erc=True)] }),
+        Part(**{ 'name':'PULSEV', 'dest':TEMPLATE, 'tool':SKIDL, '_aliases':Alias({'PULSEVOLTAGE', 'pulsev', 'pulsevoltage'}), 'keywords':'pulsed voltage source', 'pulse_width':PeriodValue(1 ms), '_match_pin_regex':False, 'period':PeriodValue(2 ms), 'pulsed_value':UnitValue(5 V), 'initial_value':0, 'description':'Pulsed voltage source', 'pyspice':{'name': 'PulseVoltageSource', 'kw': {'initial_value': 'initial_value', 'pulsed_value': 'pulsed_value', 'delay_time': 'delay_time', 'rise_time': 'rise_time', 'fall_time': 'fall_time', 'pulse_width': 'pulse_width', 'period': 'period', 'p': 'node_plus', 'n': 'node_minus'}, 'add': <function add_part_to_circuit at 0x7ff675e4bef0>}, 'ref_prefix':'V', 'num_units':1, 'fplist':None, 'do_erc':True, 'aliases':Alias({'PULSEVOLTAGE', 'pulsev', 'pulsevoltage'}), 'pin':None, 'footprint':None, 'pins':[
+            Pin(num='1',name='p',func=Pin.types.PASSIVE,do_erc=True),
+            Pin(num='2',name='n',func=Pin.types.PASSIVE,do_erc=True)] }),
+        Part(**{ 'name':'C', 'dest':TEMPLATE, 'tool':SKIDL, '_aliases':Alias({'CAP', 'cap'}), 'keywords':'cap capacitor', '_match_pin_regex':False, 'description':'Capacitor', 'pyspice':{'name': 'C', 'kw': {'value': 'capacitance', 'capacitance': 'capacitance', 'model': 'model', 'multiplier': 'multiplier', 'm': 'multiplier', 'scale': 'scale', 'temp': 'temperature', 'temperature': 'temperature', 'dtemp': 'device_temperature', 'device_temperature': 'device_temperature', 'ic': 'initial_condition', 'initial_condition': 'initial_condition', 'p': 'plus', 'n': 'minus'}, 'add': <function add_part_to_circuit at 0x7ff675e4bef0>}, 'ref_prefix':'C', 'num_units':1, 'fplist':None, 'do_erc':True, 'aliases':Alias({'CAP', 'cap'}), 'pin':None, 'footprint':None, 'pins':[
+            Pin(num='1',name='p',func=Pin.types.PASSIVE,do_erc=True),
+            Pin(num='2',name='n',func=Pin.types.PASSIVE,do_erc=True)] })])
