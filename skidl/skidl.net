@@ -1,9 +1,5 @@
 .title 
 VS N_1 0 1V
 R1 N_1 0 1kOhm
-V2 N_2 0 DC 0V PULSE(0V 5V 0s 0s 0s 1ms 2ms)
-R2 N_2 N_3 1kOhm
-C1 N_3 0 1uF
-V3 N_4 0 DC 0V PULSE(0V 5V 0s 0s 0s 1ms 2ms)
-R3 N_4 N_5 1kOhm
-C2 N_5 0 1uF
+VS_1 N_2 0 1V
+R2 N_2 0 1kOhm
