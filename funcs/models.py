@@ -7,7 +7,9 @@ class model_ND():
         Initialise class and set system parameters
 
         Parameters
-        ----------
+        ---------
+        name : str
+            Name of model, used in axis legend
         k : array of floats
             Thermal conductivity of segments
         c : array of floats
@@ -57,9 +59,7 @@ class model_ND():
         Parameters
         ----------
         dt : float
-            Time interval to update new temperatures to 
-        Q_in : float
-            Updated value of input heat 
+            Time interval to update new temperatures
         """
         heat_flux = np.diff(np.hstack((self.T,self.T_out)))*self.k
         net_heat_flux = np.diff(heat_flux)
@@ -70,21 +70,17 @@ class model_ND():
         # update central node
         self.T[:, 0] += ( (heat_flux[:,0] + self.Q_in) / self.c[:,0] ).sum() * dt
         
-    def run(self, times, func_Q_in, plot=True):
+    def run(self, times, func_Q_in):
         """
         Run simulation for given number of iterations with given time values
 
         Parameters
         ----------
-        iterations : int
-            number of iterations to run the simulation
-        
         times : array
             set of time values to run the simulation
-        
-        plot : bool, default = True
-            Set to False to omit plot
-
+        func_Q_in : function
+            Function of time which modulates heat input
+            
         Returns
         -------
         Ts : ndarray, shape (number of iterations, number of segments)
@@ -108,6 +104,23 @@ class model_ND():
         return Ts, Qs
     
     def plot(self, figax=None, show_heating=True, **kwargs):
+        """
+        Plot the simulation
+
+        Parameters
+        ----------
+        figax : tuple
+            tuple of (figure, axis handle). If None, generate new fig, ax
+        show_heating : bool
+            True to show the heating profile on the same plot
+        kwargs
+            extra keyword arguments to pass to ax.plot
+            
+        Returns
+        -------
+        fig : figure
+        ax  : axis handle
+        """
         
         # Create new figure and axes handles if none supplied
         if figax == None:
