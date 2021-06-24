@@ -127,11 +127,11 @@ class model_ND():
             fig, ax = plt.subplots(1,1, figsize=(18,6))
         else:
             fig, ax = figax
-            
+        
         for i, T_br in enumerate(self.Ts):
             for j, T_seg in enumerate(T_br[1:]):
-                ax.plot(self.times/3600, T_seg, label=self.name+': branch: {}, segment: {}'.format(i,j), **kwargs)
-        ax.plot(self.times/3600, self.Ts[0,0,:], label=self.name+': Central temperature', **kwargs)
+                ax.plot(self.times/3600, T_seg, label=self.name+': branch: {}, segment: {}'.format(i,j), color='rbgcm'[i+j], **kwargs)
+        ax.plot(self.times/3600, self.Ts[0,0,:], label=self.name+': Central temperature', color='k', **kwargs)
         ax.set(xlabel='Time (hours)', ylabel='Temperature (C)')
         ax.legend()
         
