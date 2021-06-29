@@ -134,7 +134,7 @@ class model_ND():
 
 		if show_heating:
 			ax2 = ax.twinx()
-			ax2.plot(self.times/3600, self.Q_in, ls='--', lw=2, color='r', label='Heat input')
+			ax2.plot(self.times/3600, self.Q_in, ls='--', lw=1, color='r', label='Heat input')
 			ax2.set(ylabel='Heat input (W)')
 			ax2.legend(loc=7)
 
