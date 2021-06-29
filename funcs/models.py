@@ -25,9 +25,9 @@ class model_ND():
 		self.k	 = np.array(k) # Thermal conductivity of segments
 		self.c	 = np.array(c) # Heat capacity of segments
 		self.T	 = np.array(T) # Temperatures of segments
-		self.T_out = np.array(T_out).reshape(-1,1)
-		self.T_out = self.T_out
-		self.Q_in_mag  = Q_in
+# 		self.T_out = np.array(T_out).reshape(-1,1,1)
+		self.T_out = np.expand_dims(T_out, axis=-1)
+		self.Q_in  = Q_in
 
 		# These conditional statements are a little convoluted, find a better way of setting n_br, n_seg
 		if len(self.T.shape) == 0:
@@ -45,6 +45,7 @@ class model_ND():
 			self.k	 = self.k.reshape(shape)
 			self.c	 = self.c.reshape(shape)
 			self.T	 = self.T.reshape(shape)
+			self.T_out = np.expand_dims(self.T_out, axis=-1)
 
 		self.n_br  = n_br # Number of branches
 		self.n_seg = n_seg # Number of segments per branch
@@ -52,7 +53,7 @@ class model_ND():
 
 		assert (len(self.k) == n_br) & (len(self.c) == n_br), 'input parameter shape mismatch'
 
-	def update(self, dt):
+	def update(self, i, dt):
 		"""
 		Calculate heat flux between segments and update temperatures
 
@@ -61,16 +62,16 @@ class model_ND():
 		dt : float
 			Time interval to update new temperatures
 		"""
-		heat_flux = np.diff(np.hstack((self.T,self.T_out)))*self.k
+		heat_flux = np.diff(np.hstack((self.T,self.T_out[i])))*self.k
 		net_heat_flux = np.diff(heat_flux)
 
 		# update non central nodes
 		self.T[:, 1:] += ( net_heat_flux / self.c[:,1:] ) * dt
 
 		# update central node
-		self.T[:, 0] += ( (heat_flux[:,0] + self.Q_in) / self.c[:,0] ).sum() * dt
+		self.T[:, 0] += ( (heat_flux[:,0] + self.Q_in[i]) / self.c[:,0] ).sum() * dt
 
-	def run(self, times, func_Q_in):
+	def run(self, times):
 		"""
 		Run simulation for given number of iterations with given time values
 
@@ -88,20 +89,16 @@ class model_ND():
 		"""
 		Ts = np.empty(shape=(len(times), self.n_br, self.n_seg))
 		Ts[0] = self.T
-		Qs = [self.Q_in_mag * func_Q_in(0)]
 		self.times = times
 		dtimes = np.diff(times)
 		for i, t in enumerate(times[1:]):
-			self.Q_in = self.Q_in_mag * func_Q_in(t) # allow input data to be used
-			self.update(dtimes[i])
+			self.update(i, dtimes[i])
 			Ts[i+1] = self.T
-			Qs.append(self.Q_in)
 
 		Ts = np.transpose(Ts,axes=(1,2,0)) # New shape has (n_branches, n_segments, n_iterations)
 		self.Ts = Ts
-		self.Qs = Qs
 
-		return Ts, Qs
+		return Ts
 
 	def plot(self, figax=None, show_heating=True, **kwargs):
 		"""
@@ -121,7 +118,7 @@ class model_ND():
 		fig : figure
 		ax  : axis handle
 		"""
-
+		cmap = plt.get_cmap('jet')
 		# Create new figure and axes handles if none supplied
 		if figax == None:
 			fig, ax = plt.subplots(1,1, figsize=(18,6))
@@ -130,14 +127,14 @@ class model_ND():
 
 		for i, T_br in enumerate(self.Ts):
 			for j, T_seg in enumerate(T_br[1:]):
-				ax.plot(self.times/3600, T_seg, label=self.name+': branch: {}, segment: {}'.format(i,j), color='rbgcm'[i+j], **kwargs)
+				ax.plot(self.times/3600, T_seg, label=self.name+': branch: {}, segment: {}'.format(i,j), color=cmap(0.8*i/self.n_br + 0.2*j/self.n_seg), **kwargs)
 		ax.plot(self.times/3600, self.Ts[0,0,:], label=self.name+': Central temperature', color='k', **kwargs)
 		ax.set(xlabel='Time (hours)', ylabel='Temperature (C)')
 		ax.legend()
 
 		if show_heating:
 			ax2 = ax.twinx()
-			ax2.plot(self.times/3600, self.Qs, ls='--', lw=2, color='r', label='Heat input')
+			ax2.plot(self.times/3600, self.Q_in, ls='--', lw=2, color='r', label='Heat input')
 			ax2.set(ylabel='Heat input (W)')
 			ax2.legend(loc=7)
 

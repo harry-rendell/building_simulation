@@ -127,4 +127,4 @@ def loss_single_seg(params, method, times, Ts_true, T_out, Q_in):
 	else:
 		raise ValueError('Method not supported')
 
-	return error, Ts
+	return error
