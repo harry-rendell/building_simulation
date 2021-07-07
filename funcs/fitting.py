@@ -84,32 +84,69 @@ def loss_single_seg(params, method, times, Ts_true, T_out, Q_in):
 	error : float
 			loss using method given
 	"""
-
-# 	if len(params) == 3:
-# 		k, c, T, = params
-# 		k_est = np.array(k).reshape(1,-1)
-# 		c_est = np.array(c).reshape(1,-1)
-# 		T_est = np.array(T).reshape(1,-1)
-# 	elif len(params) == 6:
-# 		k1, k2, c1, c2, T1, T2 = params
-# 		k_est = np.array([k1,k2]).reshape(1,-1)
-# 		c_est = np.array([c1,c2]).reshape(1,-1)
-# 		T_est = np.array([T1,T2]).reshape(1,-1)
-# 	else:
-# 		print('Parameter shape mismatch')
-	
-# 	T_out = 10
-# 	Q_in = 1000
 	k, c, T_est = params
 	
 	Ts = np.empty(shape=(len(times)))
 	Ts[0] = T_est
 				  
 	dtimes = np.diff(times)
+	
 	for i in range(len(times)-1):
-		T_est += ( Q_in[i] + k*(T_out[i] - T_est) )/c * dtimes[i]
-		Ts[i+1] = T_est
+		dT_est = ( Q_in[i] + k*(T_out[i] - Ts[i]) )/c * dtimes[i]
+		Ts[i+1] = Ts[i] + dT_est
 
+# 	Ts = np.transpose(Ts,axes=(1,2,0)) # New shape has (n_branches, n_segments, n_iterations)
+
+	if method=='mse':
+		# mean square error
+		error = np.mean((Ts_true - Ts) ** 2)
+	elif method=='mad':
+		# mean absolute deviation
+		error = np.mean(abs(Ts_true-Ts))
+	elif method=='lae':
+		# least absolute error
+		error = np.sum(abs(Ts_true-Ts))
+	elif method=='sse':
+		# sum of squares error
+		error = np.sum((Ts_true - Ts) ** 2)
+	else:
+		raise ValueError('Method not supported')
+
+	return error
+
+def loss_two_seg(params, method, times, T0, Ts_true, T_out, Q_in):
+	"""
+	Loss function to pass to optimiser. Note that this only currently works with a 2 segment set-up.
+	Parameters
+	----------
+	params : list of floats
+			list of [k, c, T]
+	method : str
+		choose a method to calculate loss.
+		Possible choices:
+			mse - mean square error
+			mad - mean absolute deviation
+			lae - least absolute error
+			sse - sum of squares
+	Returns
+	-------
+	error : float
+			loss using method given
+	"""
+	k1, k2, c1, c2 = params
+	
+	Ts = np.empty(shape=(len(times),2))
+	Ts[0] = T0
+ 				  
+	dtimes = np.diff(times)
+	for i in range(len(times)-1):
+		
+		dT1 = ( Q_in[i]                 + k1*(Ts[i,1] - Ts[i,0]) )/c1 * dtimes[i]
+		dT2 = ( k2*(T_out[i] - Ts[i,1]) + k1*(Ts[i,0] - Ts[i,1]) )/c2 * dtimes[i]
+		
+		Ts[i+1, 0] = Ts[i,0] + dT1
+		Ts[i+1, 1] = Ts[i,1] + dT2
+		
 # 	Ts = np.transpose(Ts,axes=(1,2,0)) # New shape has (n_branches, n_segments, n_iterations)
 
 	if method=='mse':
