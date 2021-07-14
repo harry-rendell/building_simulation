@@ -11,25 +11,23 @@ class model_ND():
 		name : str
 			Name of model, used in axis legend
 		k : array of floats
-			Thermal conductivity of segments
+			Thermal conductivity of segments (W m^-1 K^-1)
 		c : array of floats
-			Heat capacity of segments
+			Heat capacity of segments (J K^-1)
 		T : array of floats
-			Initial temperature of segments
-		T_out : float
-			Outside temperature (Celcius)
+			Initial temperature of segments (Celcius)
+		T_out : array of floats
+			Data for outside temperature (Celcius)
 		Q_in : float
-			 Heat supply to segment 0 (Watts)
+			 Heat supply to central node (W)
 		"""
 		self.name  = name
 		self.k	 = np.array(k) # Thermal conductivity of segments
 		self.c	 = np.array(c) # Heat capacity of segments
 		self.T	 = np.array(T) # Temperatures of segments
-# 		self.T_out = np.array(T_out).reshape(-1,1,1)
 		self.T_out = np.expand_dims(T_out, axis=-1)
 		self.Q_in  = Q_in
 
-		# These conditional statements are a little convoluted, find a better way of setting n_br, n_seg
 		if len(self.T.shape) == 0:
 			n_seg = 1
 			n_br  = 1
@@ -39,7 +37,7 @@ class model_ND():
 		else:
 			n_br, n_seg = self.T.shape
 
-		# If only given parameters for a single segment (number), or for a single branch (vector), recast arrays
+		# If class is only given parameters for a single segment (float), or for a single branch (array), recast arrays
 		if len(self.T.shape) < 2:
 			shape	  = (1,-1) # Calculate the appropriate shape to cast to
 			self.k	 = self.k.reshape(shape)
@@ -49,7 +47,7 @@ class model_ND():
 
 		self.n_br  = n_br # Number of branches
 		self.n_seg = n_seg # Number of segments per branch
-		# NOTE currently all branches must have same no. of segments, need to change this (or have empty segments to ensure same shape)
+		# NOTE currently all branches must have same no. of segments
 
 		assert (len(self.k) == n_br) & (len(self.c) == n_br), 'input parameter shape mismatch'
 
@@ -59,6 +57,8 @@ class model_ND():
 
 		Parameters
 		----------
+		i  : int
+			counter to select appropriate T_out and Q_in values
 		dt : float
 			Time interval to update new temperatures
 		"""
@@ -79,9 +79,7 @@ class model_ND():
 		----------
 		times : array
 			set of time values to run the simulation
-		func_Q_in : function
-			Function of time which modulates heat input
-
+			
 		Returns
 		-------
 		Ts : ndarray, shape (number of iterations, number of segments)
@@ -107,7 +105,7 @@ class model_ND():
 		Parameters
 		----------
 		figax : tuple
-			tuple of (figure, axis handle). If None, generate new fig, ax
+			tuple of (figure, axis handle). If None, generate new (fig, ax)
 		show_heating : bool
 			True to show the heating profile on the same plot
 		kwargs
