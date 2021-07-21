@@ -77,22 +77,22 @@ def loss(params, method, times, Ts_true, T_out, Q_in):
 	dtimes = np.diff(times)
 	for i in range(len(times)-1):
 
-		heat_flux = np.diff(np.hstack((T_est,T_out)))*k_est
-# 		heat_flux = np.diff(np.hstack((T_est,T_out[i])))*k_est
+# 		heat_flux = np.diff(np.hstack((T_est,T_out)))*k_est
+		heat_flux = np.diff(np.hstack((T_est,T_out[i, np.newaxis])))*k_est
 		net_heat_flux = np.diff(heat_flux)
 
 		# update non central nodes
 		T_est[:, 1:] += ( net_heat_flux / c_est[:,1:] ) * dtimes[i]
 
 		# update central node
-		T_est[:, 0] += ( (heat_flux[:,0] + Q_in) / c_est[:,0] ).sum() * dtimes[i]
-# 		T_est[:, 0] += ( (heat_flux[:,0] + Q_in[i]) / c_est[:,0] ).sum() * dtimes[i]
+# 		T_est[:, 0] += ( (heat_flux[:,0] + Q_in) / c_est[:,0] ).sum() * dtimes[i]
+		T_est[:, 0] += ( (heat_flux[:,0] + Q_in[i]) / c_est[:,0] ).sum() * dtimes[i]
 
 		Ts[i+1] = T_est
 
 	Ts = np.transpose(Ts,axes=(1,2,0)) # New shape has (n_branches, n_segments, n_iterations)
 
-	eror = error_method(method, Ts, Ts_true)
+	error = error_method(method, Ts, Ts_true)
 
 	return error
 
@@ -124,7 +124,7 @@ def loss_single_seg(params, method, times, Ts_true, T_out, Q_in):
 # 	If we need to transpose Ts, use snippet below
 # 	Ts = np.transpose(Ts,axes=(1,2,0)) # New shape has (n_branches, n_segments, n_iterations)
 
-	eror = error_method(method, Ts, Ts_true)
+	error = error_method(method, Ts, Ts_true)
 
 	return error
 
@@ -153,7 +153,7 @@ def loss_single_seg_fixed_T(params, method, times, T0, Ts_true, T_out, Q_in):
 		dT_est = ( Q_in[i] + k*(T_out[i] - Ts[i]) )/c * dtimes[i]
 		Ts[i+1] = Ts[i] + dT_est
 
-	eror = error_method(method, Ts, Ts_true)
+	error = error_method(method, Ts, Ts_true)
 
 	return error
 
@@ -185,6 +185,6 @@ def loss_two_seg(params, method, times, T0, Ts_true, T_out, Q_in):
 		Ts[i+1, 0] = Ts[i,0] + dT1
 		Ts[i+1, 1] = Ts[i,1] + dT2
 		
-	eror = error_method(method, Ts, Ts_true)
+	error = error_method(method, Ts, Ts_true)
 
 	return error
