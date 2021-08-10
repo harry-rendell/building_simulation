@@ -119,7 +119,7 @@ class model_ND():
 		cmap = plt.get_cmap('jet')
 		# Create new figure and axes handles if none supplied
 		if figax == None:
-			fig, ax = plt.subplots(1,1, figsize=(15,6))
+			fig, ax = plt.subplots(1,1, figsize=(18,6))
 		else:
 			fig, ax = figax
 

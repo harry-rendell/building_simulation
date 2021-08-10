@@ -153,8 +153,9 @@ def loss_single_seg_fixed_T(params, method, times, T0, Ts_true, T_out, Q_in):
 		dT_est = ( Q_in[i] + k*(T_out[i] - Ts[i]) )/c * dtimes[i]
 		Ts[i+1] = Ts[i] + dT_est
 
-	error = error_method(method, Ts, Ts_true)
-
+# 	error = error_method(method, Ts, Ts_true)
+	error = np.mean((Ts - Ts_true) ** 2)
+	
 	return error
 
 def loss_two_seg(params, method, times, T0, Ts_true, T_out, Q_in):
