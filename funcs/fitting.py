@@ -14,7 +14,7 @@ def error_method(method, x, y):
 			lae - least absolute error
 			sse - sum of squares
 	x : array
-		estimated data
+		model data
 	y : array
 		true data
 	
@@ -43,7 +43,8 @@ def error_method(method, x, y):
 
 def loss(params, method, times, Ts_true, T_out, Q_in):
 	"""
-	Loss function to pass to optimiser. Note that this only currently works with a 2 segment set-up.
+	Most general loss function to pass to optimiser.
+	
 	Parameters
 	----------
 	params : list of floats
@@ -58,6 +59,7 @@ def loss(params, method, times, Ts_true, T_out, Q_in):
 		Outside temperature
 	Q_in : float
 		Heat input (boiler)
+		
 	Returns
 	-------
 	error : float
@@ -77,7 +79,6 @@ def loss(params, method, times, Ts_true, T_out, Q_in):
 	dtimes = np.diff(times)
 	for i in range(len(times)-1):
 
-# 		heat_flux = np.diff(np.hstack((T_est,T_out)))*k_est
 		heat_flux = np.diff(np.hstack((T_est,T_out[i, np.newaxis])))*k_est
 		net_heat_flux = np.diff(heat_flux)
 
@@ -85,7 +86,6 @@ def loss(params, method, times, Ts_true, T_out, Q_in):
 		T_est[:, 1:] += ( net_heat_flux / c_est[:,1:] ) * dtimes[i]
 
 		# update central node
-# 		T_est[:, 0] += ( (heat_flux[:,0] + Q_in) / c_est[:,0] ).sum() * dtimes[i]
 		T_est[:, 0] += ( (heat_flux[:,0] + Q_in[i]) / c_est[:,0] ).sum() * dtimes[i]
 
 		Ts[i+1] = T_est
@@ -98,13 +98,23 @@ def loss(params, method, times, Ts_true, T_out, Q_in):
 
 def loss_single_seg(params, method, times, Ts_true, T_out, Q_in):
 	"""
-	Loss function to pass to optimiser. This only works with a single segment set up.
+	Loss function to pass to optimiser. This only works with a single segment set up. Temperature is allowed to vary to improve fit.
+	
 	Parameters
 	----------
 	params : list of floats
 			list of [k, c, T]
 	method : str
 		choose a method to calculate loss, described in error_method
+	times : array
+		array of time values to calculate loss over
+	Ts_true : array
+		True temperatures given by data
+	T_out : array
+		Outside temperature data
+	Q_in : array
+		Heat input data (boiler)
+
 	Returns
 	-------
 	error : float
@@ -130,13 +140,23 @@ def loss_single_seg(params, method, times, Ts_true, T_out, Q_in):
 
 def loss_single_seg_fixed_T(params, method, times, T0, Ts_true, T_out, Q_in):
 	"""
-	Loss function to pass to optimiser. Note that this only currently works with a 1 segment set-up, and a fixed initial temperature.
+	Loss function to pass to optimiser. This only works with a single segment set-up, and a fixed initial temperature.
+	
 	Parameters
 	----------
 	params : list of floats
 			list of [k, c]
 	method : str
 		choose a method to calculate loss, described in error_method
+	times : array
+		array of time values to calculate loss over
+	Ts_true : array
+		True temperatures given by data
+	T_out : array
+		Outside temperature data
+	Q_in : array
+		Heat input data (boiler)
+
 	Returns
 	-------
 	error : float
@@ -146,27 +166,37 @@ def loss_single_seg_fixed_T(params, method, times, T0, Ts_true, T_out, Q_in):
 	
 	Ts = np.empty(shape=(len(times)))
 	Ts[0] = T0
-				  
+				
 	dtimes = np.diff(times)
 	
 	for i in range(len(times)-1):
 		dT_est = ( Q_in[i] + k*(T_out[i] - Ts[i]) )/c * dtimes[i]
 		Ts[i+1] = Ts[i] + dT_est
 
-# 	error = error_method(method, Ts, Ts_true)
-	error = np.mean((Ts - Ts_true) ** 2)
+	error = error_method(method, Ts, Ts_true)
+# 	error = np.mean((Ts - Ts_true) ** 2) # Uncomment if error_method is not working
 	
 	return error
 
-def loss_two_seg(params, method, times, T0, Ts_true, T_out, Q_in):
+def loss_two_seg_fixed_T(params, method, times, T0, Ts_true, T_out, Q_in):
 	"""
 	Loss function to pass to optimiser. Note that this only currently works with a 2 segment set-up, and a fixed initial temperature.
+	
 	Parameters
 	----------
 	params : list of floats
 			list of [k, c]
 	method : str
 		choose a method to calculate loss, described in error_method
+	times : array
+		array of time values to calculate loss over
+	Ts_true : array
+		True temperatures given by data
+	T_out : array
+		Outside temperature data
+	Q_in : array
+		Heat input data (boiler)
+
 	Returns
 	-------
 	error : float
